@@ -1,6 +1,6 @@
 # Ruang — Presensi Kafe
 
-Aplikasi frontend **HTML, CSS, JavaScript murni**, backend **Node.js murni**, dan database **SQLite** bawaan Node. Tanpa framework, layanan pihak ketiga, build step, atau paket npm. Memerlukan Node.js **24 atau lebih baru**. Tampilan responsif berbahasa Indonesia.
+Aplikasi frontend **HTML, CSS, JavaScript murni**, backend **Python murni**, dan database **SQLite** bawaan Python. Tidak memakai framework atau dependensi pihak ketiga. Memerlukan Python **3.11 atau lebih baru**. Tampilan responsif berbahasa Indonesia.
 
 ## Jalankan lokal
 
@@ -9,9 +9,10 @@ Di PowerShell, dari direktori proyek:
 ```powershell
 $env:ADMIN_EMAIL = 'pj@kafe.com'
 $env:ADMIN_PASSWORD = Read-Host 'Kata sandi awal admin (minimal 12 karakter)' -MaskInput
-node server.js --init
+python app.py --init
 Remove-Item Env:ADMIN_PASSWORD
-node server.js
+Remove-Item Env:ADMIN_EMAIL
+python app.py
 ```
 
 Buka **http://localhost:3000**. Masuk dengan akun yang baru dibuat. Tidak ada kredensial demo atau kata sandi bawaan. `init` hanya bisa dijalankan ketika belum ada admin.
@@ -42,7 +43,7 @@ Masuk dan pulang dicatat terpisah. Pulang harus mengikuti masuk; shift lintas te
 
 ## Deploy ke VPS Ubuntu/Debian
 
-Siapkan Node.js 24+ (`node --version`), Nginx, Certbot, domain yang sudah mengarah ke VPS, dan akses SSH. Aplikasi ini **belum di-deploy ke VPS**; konfigurasi berikut siap digunakan di server Anda.
+Siapkan Python 3.11+ (`python3 --version`), Nginx, Certbot, domain yang sudah mengarah ke VPS, dan akses SSH. Aplikasi ini **belum di-deploy ke VPS**; konfigurasi berikut siap digunakan di server Anda. Pada Ubuntu/Debian, instal runtime dengan `sudo apt install python3` bila belum tersedia.
 
 Salin source ke `/opt/ruang-presensi` (jangan salin database lokal atau data pengujian). Buat user dan penyimpanan:
 
@@ -56,7 +57,7 @@ sudo chmod -R g+rX /opt/ruang-presensi
 Buat `/etc/ruang-presensi.env` dengan isi:
 
 ```ini
-NODE_ENV=production
+APP_ENV=production
 HOST=127.0.0.1
 PORT=3000
 DATA_DIR=/var/lib/ruang-presensi
@@ -71,7 +72,7 @@ read -r -p 'Email admin: ' ADMIN_EMAIL
 read -r -s -p 'Kata sandi admin (minimal 12 karakter): ' ADMIN_PASSWORD
 echo
 export ADMIN_EMAIL ADMIN_PASSWORD
-sudo --preserve-env=ADMIN_EMAIL,ADMIN_PASSWORD -u presensi env DATA_DIR=/var/lib/ruang-presensi /usr/bin/node server.js --init
+sudo --preserve-env=ADMIN_EMAIL,ADMIN_PASSWORD -u presensi env DATA_DIR=/var/lib/ruang-presensi /usr/bin/python3 app.py --init
 unset ADMIN_PASSWORD ADMIN_EMAIL
 sudo cp deploy/ruang-presensi.service /etc/systemd/system/
 sudo systemctl daemon-reload
@@ -79,7 +80,7 @@ sudo systemctl enable --now ruang-presensi
 sudo cp deploy/nginx.conf /etc/nginx/sites-available/ruang-presensi
 ```
 
-Ubah `presensi.example.com` di konfigurasi Nginx menjadi domain Anda. Jika Node dipasang di lokasi lain, sesuaikan `/usr/bin/node` pada service dan perintah init.
+Ubah `presensi.example.com` di konfigurasi Nginx menjadi domain Anda. Jika Python dipasang di lokasi lain, sesuaikan `/usr/bin/python3` pada service dan perintah init.
 
 ```bash
 sudo ln -s /etc/nginx/sites-available/ruang-presensi /etc/nginx/sites-enabled/ruang-presensi
@@ -104,8 +105,8 @@ Gunakan **https://domain-anda** setelah TLS aktif. Cookie sesi production hanya 
 ## Pengujian
 
 ```bash
-node --test test/app.test.js
+python -m unittest discover -s test -v
 ```
 
-Pengujian memakai database sementara dan port 3197: password hashing, radius/akurasi, login/CSRF, pembatasan peran dan foto, masuk/pulang, penolakan duplikat, review → klarifikasi → persetujuan, persistensi sesudah restart, ganti kata sandi, dan penonaktifan akun. Kamera dan GPS perangkat nyata perlu diuji manual pada domain HTTPS di lokasi kafe.
+Pengujian memakai database dan port sementara: login/CSRF, pembatasan peran, validasi akurasi, masuk/pulang, penolakan duplikat, review → klarifikasi → persetujuan, serta persistensi sesudah restart. Kamera dan GPS perangkat nyata perlu diuji manual pada domain HTTPS di lokasi kafe.
 

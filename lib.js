@@ -1,5 +1,0 @@
-import { scryptSync, randomBytes, timingSafeEqual } from 'node:crypto';
-export function hash(password) { const salt=randomBytes(16).toString('hex'); return salt+':'+scryptSync(password,salt,64).toString('hex'); }
-export function verify(password,stored) { const [salt,key]=stored.split(':'); return timingSafeEqual(Buffer.from(key,'hex'),scryptSync(password,salt,64)); }
-export function distance(a,b,c,d) { const r=Math.PI/180; const h=Math.sin((c-a)*r/2)**2+Math.cos(a*r)*Math.cos(c*r)*Math.sin((d-b)*r/2)**2; return 6371000*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h)); }
-export function validateLocation(v,s) { if(![v.lat,v.lng,v.accuracy].every(Number.isFinite)||Math.abs(v.lat)>90||Math.abs(v.lng)>180||v.accuracy<0) throw Error('Koordinat GPS tidak valid.'); if(v.accuracy>s.max_accuracy) throw Error('GPS belum akurat. Pindah ke area terbuka dan perbarui lokasi.'); const meters=distance(v.lat,v.lng,s.lat,s.lng); if(meters>s.radius) throw Error(`Anda berada ${Math.round(meters)} m dari kafe, di luar radius ${s.radius} m. Ulangi presensi di lokasi kafe.`); return Math.round(meters); }
