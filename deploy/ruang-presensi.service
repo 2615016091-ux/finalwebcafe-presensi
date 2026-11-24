@@ -1,0 +1,22 @@
+[Unit]
+Description=Ruang Presensi Cafe
+After=network.target
+
+[Service]
+Type=simple
+User=presensi
+Group=presensi
+WorkingDirectory=/opt/ruang-presensi
+EnvironmentFile=/etc/ruang-presensi.env
+ExecStart=/usr/bin/node /opt/ruang-presensi/server.js
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/ruang-presensi
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
